@@ -1,0 +1,4 @@
+use_frameworks!
+target 'Notes' do
+    pod 'Alamofire'
+end
