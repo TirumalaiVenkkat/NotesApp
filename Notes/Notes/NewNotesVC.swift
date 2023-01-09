@@ -19,6 +19,8 @@ class NewNotesVC: UIViewController, UINavigationControllerDelegate {
     @IBOutlet weak var backBtn: UIButton!
     @IBOutlet weak var imageBtn: UIButton!
     @IBOutlet weak var saveBtn: UIButton!
+    @IBOutlet weak var profileImage: UIImageView!
+    @IBOutlet weak var headerLbl: UILabel!
     
     let appDelegate = UIApplication.shared.delegate as! AppDelegate //Singlton instance
     var context:NSManagedObjectContext!
@@ -32,11 +34,13 @@ class NewNotesVC: UIViewController, UINavigationControllerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         self.titleTF.delegate = self
         self.descriptionTV.delegate = self
-        imagePicker.delegate = self
-        
+        self.imagePicker.delegate = self
+        self.profileImage.isHidden = false
+        self.descriptionTV.layer.cornerRadius = 5
+        self.descriptionTV.layer.borderColor = UIColor.black.cgColor
+        self.descriptionTV.layer.borderWidth = 0.5
     }
     
     @IBAction func backAction(_ sender: Any) {
@@ -60,9 +64,9 @@ class NewNotesVC: UIViewController, UINavigationControllerDelegate {
         noteEn.setValue(self.descriptionTV.text, forKey: "notedescriptions")
         noteEn.setValue(self.note_created, forKey: "timecreated")
         noteEn.setValue(self.imageData, forKey: "notesimage")
-        
         do{
             try manageContent.save()
+            print("Data saved !!")
         }catch let error as NSError {
             print("could not save . \(error), \(error.userInfo)")
         }
@@ -75,7 +79,7 @@ class NewNotesVC: UIViewController, UINavigationControllerDelegate {
         if UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum){
             print("Button capture")
             imagePicker.sourceType = .savedPhotosAlbum
-            imagePicker.allowsEditing = false
+            imagePicker.allowsEditing = true
             self.present(imagePicker, animated: true, completion: nil)
         }
     }
@@ -96,6 +100,10 @@ extension NewNotesVC: UITextViewDelegate {
         print("Began...")
     }
     
+//    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+//        self.descriptionTV.text = ""
+//        return true
+//    }
     func textViewDidEndEditing(_ textView: UITextView) {
         print("End...")
     }
@@ -112,13 +120,17 @@ extension NewNotesVC: UITextFieldDelegate {
 }
 
 extension NewNotesVC: UIImagePickerControllerDelegate {
-    func imagePickerController(picker: UIImagePickerController!, didFinishPickingImage image: UIImage!, editingInfo: NSDictionary!){
+    public func imagePickerController(_ picker: UIImagePickerController,didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         self.dismiss(animated: true, completion: { () -> Void in
-//            let imageData:NSData = UIImagePNGRepresentation(profileImage.image!)!
-//            let imageStr = imageData.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0))
-//            print(imageStr)
-//            self.imageData = imageStr
+            if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+                self.profileImage.image = image
+            }
+//            let imageData:NSData = self.profileImage.image! as NSData
+//            print("imageData::",imageData)
+//            let stringValue = String(decoding: imageData, as: UTF8.self)
+//            print("stringValue::",stringValue)
         })
+        //imagePicker.dismiss(animated: true, completion: nil)
 
     }
 }

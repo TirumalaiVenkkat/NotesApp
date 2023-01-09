@@ -27,6 +27,8 @@ class NotesHomeVC: UIViewController {
     var notesInCache = [NSManagedObject]()
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     var context:NSManagedObjectContext!
+    var explained = Bool()
+    var imageStr = String()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -149,18 +151,26 @@ extension NotesHomeVC: UICollectionViewDelegate, UICollectionViewDataSource, UIC
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NotesCVC", for: indexPath) as! NotesCVC
-        let model = self.notesInCache[indexPath.row]
+        let model = self.reversedCache[indexPath.row]
         cell.dateLbl.text = model.value(forKey: "timecreated") as? String ?? ""
         cell.descriptionLbl.text = model.value(forKey: "notedescriptions") as?  String ?? ""
+        //cell.contentView.autoresizingMask = [UIView.AutoresizingMask.flexibleHeight]
+        self.imageStr = model.value(forKey: "notesimage") as? String ?? ""
+        print(cell.descriptionLbl.text?.count as Any)
+        if cell.descriptionLbl.text!.count >= 300 {
+            self.explained = true
+        } else {
+            self.explained = false
+        }
         cell.backgroundColor = .randomColor()
-        cell.layer.cornerRadius = 20
+        cell.layer.cornerRadius = 15
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyBoard.instantiateViewController(withIdentifier: "ViewNotesVC") as! ViewNotesVC
-        let model = self.notesInCache[indexPath.row]
+        let model = self.reversedCache[indexPath.row]
         vc.image = model.value(forKey: "notesimage") as? String ?? ""
         vc.header = model.value(forKey: "title") as? String ?? ""
         vc.note = model.value(forKey: "notedescriptions") as?  String ?? ""
@@ -169,21 +179,22 @@ extension NotesHomeVC: UICollectionViewDelegate, UICollectionViewDataSource, UIC
     }
     
     func collectionView(_ collectionView: UICollectionView,layout collectionViewLayout: UICollectionViewLayout,insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 1.0, left: 8.0, bottom: 1.0, right: 8.0)
+        return UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let lay = collectionViewLayout as! UICollectionViewFlowLayout
-        let model = self.notesInCache[indexPath.row]
-        if model.value(forKey: "notesimage").debugDescription.isEmpty {
-            let widthPerItem = collectionView.frame.width - lay.minimumInteritemSpacing
-            return CGSize(width: widthPerItem, height: 150)
-        } else {
-            let widthPerItem = collectionView.frame.width / 2 - lay.minimumInteritemSpacing
-            return CGSize(width: widthPerItem - 4, height: 200)
-        }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 5
     }
 
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let lay = collectionViewLayout as! UICollectionViewFlowLayout
+        let widthPerItem = collectionView.frame.width / 2 - lay.minimumInteritemSpacing
+        return CGSize(width: widthPerItem - 2, height: 200)
+    }
 }
 
 class NotesModelCoreData:NSManagedObject{
